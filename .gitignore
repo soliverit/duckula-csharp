@@ -1,0 +1,31 @@
+# Build output
+bin/
+obj/
+
+# Rider/VS Code
+.idea/
+.vscode/
+
+# Visual Studio user settings
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Mac junk
+.DS_Store
+
+# Windows junk
+Thumbs.db
+
+# NuGet stuff
+*.nupkg
+*.snupkg
+.nuget/
+
+# Logs
+*.log
+
+# JetBrains
+*.DotSettings.user
