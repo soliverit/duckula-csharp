@@ -29,6 +29,6 @@ namespace MOOSandbox.Optimisation
 		/*
 		 *  Instance Methods
 		 */
-
+		//public virtual int[] GetLowerBounds(){ return new int[] { Popluation,
 	}
 }

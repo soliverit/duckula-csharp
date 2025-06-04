@@ -1,8 +1,15 @@
 ﻿using GeneticSharp;
 using MOOSandbox.Chromosome;
+using MOOSandbox.DataManagement;
+using MOOSandbox.Building;
 using System;
 
+string EXAMPLE_CSV_PATH = "./examples/stockton/data.csv";
 int N_VARIABLES = 100;
+
+// Load data
+CsvHandler csvHandler		= CsvHandler.ParseCSV(EXAMPLE_CSV_PATH);
+MathNetRetrofitsTable data = new MathNetRetrofitsTable(csvHandler, RetrofitOption.ALL_RETROFIT_OPTION_KEYS.ToArray() );
 // Define the chromosome: four genes representing x1, y1, x2, y2
 var chromosome = new MixedIntegerChromosome(
 	new int[N_VARIABLES],       // Lower bounds
@@ -13,10 +20,12 @@ var chromosome = new MixedIntegerChromosome(
 var fitness = new FuncFitness(c =>
 {
 	MixedIntegerChromosome fc = (MixedIntegerChromosome)c;
-	var values = fc.GetValues();
-	double dx = values[2] - values[0];
-	double dy = values[3] - values[1];
-	return Math.Sqrt(dx * dx + dy * dy);
+	var values		= fc.GetValues();
+	double score	= 0;
+	for (int i = 0; i < N_VARIABLES; i++)
+		for (int j = 0; j < N_VARIABLES; j++)
+			score += 1; // TODO: This is where the data
+	return score;
 });
 
 // Create the population
