@@ -16,9 +16,8 @@ namespace MOOSandbox.DataManagement
 		public MathNetRetrofitsTable(CsvHandler csv, string[] retrofitAliases)
 		{
 			CsvHandler			= csv;
-			ActiveBuildingMask	= Enumerable.Repeat(1, csv.Length).ToArray();
+			ActiveBuildingMask = Enumerable.Range(0, csv.Length).ToArray();
 			BuildTables(retrofitAliases);
-			
 		}
 
 		/*
@@ -33,35 +32,49 @@ namespace MOOSandbox.DataManagement
 		 *  Instance Members
 		 */
 		protected CsvHandler CsvHandler { get; set; }
-		protected bool BuiltTables { get; set; }
+		protected bool BuiltTables;
 		protected int[] ActiveBuildingMask;
-		protected int[][] Retrofits				=  Array.Empty<int[]>();
-		protected Matrix<float> Costs			= Matrix<float>.Build.Dense(0, 0);
-		protected Matrix<float> Differences		= Matrix<float>.Build.Dense(0, 0);
-		protected Dictionary<string, Vector<float>> DataTables { get; set; } = new Dictionary<string, Vector<float>>();
+		protected int[][] Retrofits									=  Array.Empty<int[]>();
+		protected Dictionary<string, int> RetrofitAliasedIndices	= new Dictionary<string, int>();
+		protected Dictionary<int, string> RetrofitIndexAliases		= new Dictionary<int, string>();
+		protected Matrix<float> Costs								= Matrix<float>.Build.Dense(0, 0);
+		protected Matrix<float> Differences							= Matrix<float>.Build.Dense(0, 0);
+		protected Dictionary<string, Vector<float>> DataTables		= new Dictionary<string, Vector<float>>();
 		/*
 		 *  Instance Methods
 		 */
 		public void BuildTables(string[] retrofitAliases)
 		{
 			// Make sure we don't build the tables again
-			if (BuiltTables) { return; }
+			if (BuiltTables)
+				return;
 			float[][] costs = new float[retrofitAliases.Length][];
 			float[][] diffs = new float[retrofitAliases.Length][];
 			// Prepare all retroifts
 			for (int aliasID = 0; aliasID < retrofitAliases.Length; aliasID++)
 			{
-				string costColumnName = retrofitAliases[aliasID] + COST_SUFFIX;
-				string diffColumnName = retrofitAliases[aliasID] + DIFF_SUFFIX;
-				costs[aliasID] = CsvHandler.GetNumericColumnValues(costColumnName);
-				diffs[aliasID] = CsvHandler.GetNumericColumnValues(diffColumnName);
+				RetrofitAliasedIndices[retrofitAliases[aliasID]]	= aliasID;
+				RetrofitIndexAliases[aliasID]						= retrofitAliases[aliasID];
+				string costColumnName								= retrofitAliases[aliasID] + COST_SUFFIX;
+				string diffColumnName								= retrofitAliases[aliasID] + DIFF_SUFFIX;
+				costs[aliasID]										= CsvHandler.GetNumericColumnValues(costColumnName);
+				diffs[aliasID]										= CsvHandler.GetNumericColumnValues(diffColumnName);
+				Console.WriteLine($"{retrofitAliases[aliasID]}\t {costs[aliasID].Length}");
 			}
 			// Transpose the table
 			int rows = CsvHandler.Length;
 			int cols = retrofitAliases.Length;
-			float[,] transposedCosts = new float[cols, rows];
-			float[,] transposedDiffs = new float[cols, rows];
 
+			float[,] transposedCosts = new float[rows, cols];
+			float[,] transposedDiffs = new float[rows, cols];
+
+			for (int columnID = 0; columnID < cols; columnID++)
+			{
+				if (costs[columnID].Length != rows)
+				{
+					Console.WriteLine($"Mismatch: costs[{columnID}].Length = {costs[columnID].Length}, expected {rows}");
+				}
+			}
 			for (int columnID = 0; columnID < cols; columnID++)
 			{
 				for (int rowID = 0; rowID < rows; rowID++)
@@ -92,6 +105,19 @@ namespace MOOSandbox.DataManagement
 			// Add the new 
 			DataTables[columnName] = Vector.Build.DenseOfArray(CsvHandler.GetNumericColumnValues(columnName).ToArray());
 			return true;
+		}
+		//---- Math stuff ---//
+		public float SumCosts(int[] rows, int[] columns)
+		{
+			Console.WriteLine(Costs.ColumnCount);
+			Console.WriteLine(Costs.RowCount);
+			
+			float sum = 0;
+			for(int i  = 0; i < rows.Length; i++)
+			{
+				sum += Costs[rows[i],columns[i]];
+			}
+			return sum;
 		}
 	}
 }

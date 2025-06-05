@@ -62,6 +62,7 @@ namespace MOOSandbox.DataManagement
 				using var reader = new StreamReader(path);
 				using var csv = new CsvReader(reader, config);
 				// Deal with when the header row isn't found
+				csv.Read();
 				csv.ReadHeader();
 				if (csv.HeaderRecord == null)
 				{
@@ -95,6 +96,7 @@ namespace MOOSandbox.DataManagement
 					{
 						data.AddError($"{tName}::ParseCSV. Row{csv.Parser.Row} has more cells than there are headers");
 					}
+					data.Rows.Add(row);
 				}
 			}
 			catch (HeaderValidationException ex)
@@ -181,6 +183,11 @@ namespace MOOSandbox.DataManagement
 					corruptIDs.Add(i);
 			// Self-explanatory
 			return corruptIDs;
+		}
+		public void PrintErrors()
+		{
+			for (int i = 0; i < Errors.Count; i++)
+				Console.WriteLine($"{i}:\t{Errors[i]}");
 		}
 	}
 }
